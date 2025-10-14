@@ -1,0 +1,59 @@
+/* Preserve suas variáveis */
+:root {
+  --inbec-blue-dark: #1A237E;
+  --inbec-blue-light: #2C3E50;
+  --inbec-red: #D32F2F;
+  --inbec-white: #FFFFFF;
+  --inbec-light-gray: #ECF0F1;
+  --inbec-medium-gray: #BDC3C7;
+  --inbec-dark-gray: #34495E;
+  --glass-bg-color-dark: rgba(26, 35, 126, 0.25);
+  --glass-input-bg-color: rgba(26, 35, 126, 0.1);
+  --glass-input-border-color: rgba(255,255,255,0.4);
+}
+
+/* Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Small compatibility layer: replica visual atual em componentes reutilizáveis */
+@layer components {
+  .App-header {
+    background-color: var(--glass-bg-color-dark);
+    color: var(--inbec-white);
+    @apply p-5 rounded-xl mb-8 w-full max-w-[1200px] mx-auto shadow-lg flex flex-wrap items-center justify-between gap-3;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    backdrop-filter: blur(10px);
+  }
+  .action-button { @apply px-4 py-2 rounded-lg text-sm text-white; background-color: var(--inbec-blue-light); }
+  .action-button:hover:not(:disabled) { @apply transform -translate-y-0.5; }
+  .home-button-card {
+    background-color: var(--glass-bg-color-dark);
+    color: var(--inbec-white);
+    @apply p-5 rounded-xl shadow-md border border-white/30 flex flex-col items-center text-center;
+    backdrop-filter: blur(10px);
+  }
+  /* responsivo básico */
+  @media (max-width: 600px) {
+    .home-button-card { @apply w-full; max-width: none; }
+    .action-button { @apply w-full; }
+    .App-header { @apply p-4; }
+  }
+}
+
+
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}

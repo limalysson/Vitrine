@@ -1,0 +1,212 @@
+@reference "tailwindcss";
+
+@tailwind utilities;
+
+
+/* variáveis e componentes */
+:root{
+  --brand-accent: #27b1b3;
+  --brand-primary: #0b2233;
+  --glass-bg: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.12);  
+
+  --brand-primary: #030097;
+  --brand-primary-light: #504dff;
+  --brand-primary-dark: #02005e;
+  --brand-primary-darker: #000014;
+
+  --brand-secondary: #27b1b3;
+  --brand-secondary-light: #5fd3d5;
+  --brand-secondary-dark: #1a7c7d;
+
+  --brand-tertiary: #ffc107;
+  --brand-tertiary-light: #ffe082;
+  --brand-tertiary-dark: #c79100;
+
+  --brand-surface: #0f3a54;
+  --brand-white: #FFFFFF;
+  --brand-light-gray: #ECF0F1;
+  --brand-medium-gray: #BDC3C7;
+  --brand-dark-gray: #34495E;
+  --brand-accent: #27b1b3;
+  --brand-success: #28a745;
+  --brand-error: #dc3545;
+  --brand-warning: #ffc107;
+
+  --glass-bg: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.12);
+  
+}
+
+body {
+  
+  background-color: var(--brand-primary-darker);
+  color: #ffffff;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+@layer components {
+  .home-button-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--brand-white); /* equivalente ao bg-white/80 */
+  color: var(--brand-primary-dark);         /* equivalente ao text-inbec-blue-dark */
+  padding: 0.5em 1.5rem;                   /* px-6 py-2 */
+  border-radius: 0.5rem;                    /* rounded-lg */
+  text-align: center;
+  font-weight: 600;                         /* font-semibold */  
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  max-width: 360px;
+  text-decoration: none;
+  border: none;
+  /* aspect-ratio: 1/1; */
+}
+
+.home-button-card:hover {
+  background-color: var(--brand-primary-dark);
+  color: #fff;                              
+}
+
+ .home-button-logout {
+  background-color: red;
+  color: white;
+ }
+
+ .home-button-logout:hover {
+  background-color: white;
+  color: #ff0000;                              
+ }
+
+
+.home-button-link {
+  background-color: var(--brand-accent);
+  }
+
+  
+}
+
+/* container por campo (label + input) */
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 98%;
+  }
+
+  /* linha responsiva (1 coluna em mobile, 2 em >=640px) */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  @media (min-width: 640px) {
+    .form-row.sm-2 {
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+  }
+
+  .form-label {
+    font-size: 0.875rem;
+    color: var(--brand-white);
+    opacity: 0.85;
+    display: block;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    background: rgba(255,255,255,0.06); /* similar a bg-white/6 */
+    color: var(--brand-white);
+    border: none;
+    font: inherit;
+  }
+
+  .form-input:focus,
+  .form-select:focus,
+  .form-textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(80,77,255,0.14); /* foco suave */
+  }
+
+  /* wrapper para botões de ação do campo (alinha à direita) */
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+.card-default {  
+  width: 100%;         /* w-full */
+  max-width: 360px;    /* max-w-[360px] */
+  background: rgba(26, 35, 126, 0.18); /* bg-[rgba(26,35,126,0.18)] */
+  border-radius: 0.75rem; /* rounded-xl */
+  padding: 1.5rem;        /* p-6 */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* shadow-md */
+  /* border: 1px solid rgba(255,255,255,0.2); border border-white/20 */
+  display: flex;           /* flex */
+  flex-direction: column;  /* flex-col */
+  align-items: center;     /* items-center */
+  text-align: center;      /* text-center */
+  justify-content: space-between; /* justify-between */
+}
+
+.card-default-large {  
+  width: 100%;         /* w-full */
+  max-width: 360px;    /* max-w-[360px] */
+  background: rgba(26, 35, 126, 0.18); /* bg-[rgba(26,35,126,0.18)] */
+  border-radius: 0.75rem; /* rounded-xl */
+  padding: 1.5rem;        /* p-6 */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* shadow-md */
+  /* border: 1px solid rgba(255,255,255,0.2); border border-white/20 */
+  display: flex;           /* flex */
+  flex-direction: column;  /* flex-col */
+  align-items: center;     /* items-center */
+  text-align: center;      /* text-center */
+  justify-content: space-between; /* justify-between */
+}
+
+.form-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: rgba(255,255,255,0.06);
+    color: var(--brand-white);
+    padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    border: none;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: calc(100% - 0.9rem) calc(50% - 3px), calc(100% - 0.55rem) calc(50% - 3px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+  }
+
+  .form-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(80,77,255,0.14);
+  }
+
+  /* tenta aplicar fundo/cores às opções (suporte varia entre navegadores) */
+  .form-select option {
+    background: var(--brand-primary-darker);
+    color: var(--brand-white);
+  }
+  .form-select option:checked {
+    background: var(--brand-primary-dark);
+    color: var(--brand-white);
+  }
+  .form-select option:hover {
+    background: rgba(255,255,255,0.08);
+    color: var(--brand-white);
+  }
+
+  /* remove seta padrão no IE/Edge */
+  .form-select::-ms-expand {
+    display: none;
+  }
