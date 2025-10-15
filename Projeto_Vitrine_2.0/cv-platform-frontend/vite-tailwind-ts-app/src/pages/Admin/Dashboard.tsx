@@ -168,30 +168,38 @@ const AdminDashboard: React.FC = () => {
 
       <div className="admin-dashboard-container">
         <div className="admin-container">
-          <header className="admin-header-group">
-            <div className="admin-header-row">
-              <h1>Painel Administrativo</h1>
-              <button className="nav-button logout-button" onClick={handleLogout}>
-                Sair
-              </button>
+          <header className="admin-header-group form-field card-default-large">
+            <div className="admin-header-row grid grid-cols-3 items-center">
+              <div /> {/* coluna vazia para equilibrar */}
+              <h1 className="text-center text-xl font-semibold">Painel Administrativo</h1>
+              <div className="flex justify-end">
+                <button className="nav-button logout-button home-button-card home-button-logout" onClick={handleLogout}>
+                  Sair
+                </button>
+              </div>
             </div>
 
             <nav className="admin-actions">
-              <button className="copy-link-button" onClick={copyLandingPageLink}>
-                Gerar Link para Currículos Selecionados
-              </button>
-
-              <div style={{ marginTop: 8 }}>
+              <div className="grid grid-cols-3 gap-4">                        
                 
-                <button className="action-button glass-action-button" onClick={() => navigate("/admin/vagas")}>
-                  Gerenciar Vagas
-                </button>
+                <div /> {/* coluna vazia para equilibrar */}
+                <button className="home-button-card" onClick={copyLandingPageLink}>
+                  Gerar Link para Currículos Selecionados
+                </button>                
+                
+
+                <div className="grid grid-cols-2">
+                  <div /> {/* coluna vazia para equilibrar */}
+                  <button className="home-button-card" onClick={() => navigate("/admin/vagas")}>
+                    Dashboard de Vagas
+                  </button>
+                </div>
               </div>
 
-              <div className="filter-status-group" style={{ marginTop: 12 }}>
-                <div>
+              <div className="filter-status-group grid grid-cols-1 sm:grid-cols-3 gap-4 items-end" style={{ marginTop: 10 }}>
+                <div className="form-field">
                   <label htmlFor="status-select">Status:</label>
-                  <select id="status-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                  <select id="status-select" className="form-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
                     <option value="all">Todos</option>
                     <option value="ativo">Ativo</option>
                     <option value="pendente">Pendente</option>
@@ -199,9 +207,9 @@ const AdminDashboard: React.FC = () => {
                   </select>
                 </div>
 
-                <div>
+                <div className="form-field">
                   <label htmlFor="periodo-select">Período:</label>
-                  <select id="periodo-select" value={filterPeriodo} onChange={(e) => setFilterPeriodo(e.target.value)}>
+                  <select id="periodo-select" className="form-select" value={filterPeriodo} onChange={(e) => setFilterPeriodo(e.target.value)}>
                     <option value="all">Todos</option>
                     <option value="1º Semestre">1º Semestre</option>
                     <option value="2º Semestre">2º Semestre</option>
@@ -216,9 +224,9 @@ const AdminDashboard: React.FC = () => {
                   </select>
                 </div>
 
-                <div>
+                <div className="form-field">
                   <label htmlFor="curso-select">Curso:</label>
-                  <select id="curso-select" value={filterCurso} onChange={(e) => setFilterCurso(e.target.value)}>
+                  <select id="curso-select" className="form-select" value={filterCurso} onChange={(e) => setFilterCurso(e.target.value)}>
                     <option value="all">Todos</option>
                     <option value="Análise e Desenvolvimento de Sistemas">Análise e Desenvolvimento de Sistemas</option>
                     <option value="Engenharia de Software">Engenharia de Software</option>
@@ -228,10 +236,18 @@ const AdminDashboard: React.FC = () => {
               </div>
             </nav>
 
-            <section style={{ marginBottom: 12, marginTop: 12 }}>
+            <section style={{ marginBottom: 12, marginTop: 12 }} className="grid grid-cols-3">
+              Total de Currículos filtrados: {curriculums.length}
+              
+              <div />
+              
+              
+
+              <div className="grid grid-cols-2">
+              
               <button
                 type="button"
-                className="action-button glass-action-button approve-button"
+                className="home-button-card"
                 onClick={() => {
                   const idsParaSelecionar = curriculums.filter((cv) => !cv.selecionadoParaEmpresa).map((cv) => cv._id);
                   Promise.all(idsParaSelecionar.map((id) => handleSelectForCompany(id))).then(() =>
@@ -241,10 +257,9 @@ const AdminDashboard: React.FC = () => {
               >
                 Selecionar Todos
               </button>
-
               <button
                 type="button"
-                className="action-button glass-action-button deactivate-button"
+                className="home-button-card"
                 onClick={() => {
                   const idsParaLimpar = curriculums.filter((cv) => cv.selecionadoParaEmpresa).map((cv) => cv._id);
                   Promise.all(idsParaLimpar.map((id) => handleSelectForCompany(id))).then(() =>
@@ -255,12 +270,16 @@ const AdminDashboard: React.FC = () => {
               >
                 Limpar Seleção
               </button>
+              </div>
             </section>
 
-            <section style={{ marginBottom: 24 }}>
+            <section style={{ marginBottom: 24 }} className="grid grid-cols-3">
+              <div />
+              <div className="grid grid-cols-2">
+              <div />
               <button
                 type="button"
-                className="action-button approve-button"
+                className="home-button-card"
                 onClick={async () => {
                   const idsParaAtivar = curriculums.filter((cv) => cv.status !== "ativo").map((cv) => cv._id);
                   await Promise.all(idsParaAtivar.map((id) => handleStatusChange(id, "ativo")));
@@ -269,10 +288,12 @@ const AdminDashboard: React.FC = () => {
               >
                 Aprovar/Ativar Todos
               </button>
+              </div>
 
+              <div className="grid grid-cols-2">
               <button
                 type="button"
-                className="action-button pending-button"
+                className="home-button-card"
                 onClick={async () => {
                   const idsParaPendente = curriculums.filter((cv) => cv.status !== "pendente").map((cv) => cv._id);
                   await Promise.all(idsParaPendente.map((id) => handleStatusChange(id, "pendente")));
@@ -280,12 +301,12 @@ const AdminDashboard: React.FC = () => {
                 }}
                 style={{ marginLeft: 8 }}
               >
-                Marcar todos como Pendente
+                Todos Pendente
               </button>
 
               <button
                 type="button"
-                className="action-button deactivate-button"
+                className="home-button-card home-button-logout"
                 onClick={async () => {
                   const idsParaDesativar = curriculums.filter((cv) => cv.status !== "inativo").map((cv) => cv._id);
                   await Promise.all(idsParaDesativar.map((id) => handleStatusChange(id, "inativo")));
@@ -295,6 +316,8 @@ const AdminDashboard: React.FC = () => {
               >
                 Desativar Todos
               </button>
+              </div>
+              
             </section>
           </header>
 

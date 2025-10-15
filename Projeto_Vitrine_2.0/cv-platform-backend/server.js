@@ -584,6 +584,35 @@ app.put('/api/admin/vagas/:id', auth, async (req, res) => {
     }
 });
 
+// --- Rota para REMOVER FOTO DE PERFIL (aluno) ---
+app.delete('/api/alunos/foto', auth, async (req, res) => {
+  try {
+    const alunoEmail = req.user.email;
+    const curriculo = await Curriculum.findOne({ alunoEmail });
+
+    if (!curriculo || !curriculo.fotoUrl) {
+      return res.status(404).json({ success: false, message: 'Nenhuma foto cadastrada.' });
+    }
+
+    const fotoPath = curriculo.fotoUrl;
+    const filePath = path.join(__dirname, fotoPath);
+
+    // remove arquivo físico se existir
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    // limpa campo no documento
+    curriculo.fotoUrl = '';
+    await curriculo.save();
+
+    return res.json({ success: true, message: 'Foto removida com sucesso.' });
+  } catch (err) {
+    console.error('Erro ao remover foto:', err);
+    return res.status(500).json({ success: false, message: err.message || 'Erro interno ao remover foto.' });
+  }
+});
+
 // --- Iniciando o Servidor ---
 
 // Função para encontrar o IP local na rede

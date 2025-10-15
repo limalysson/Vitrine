@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import api, { API_BASE_URL } from "../../services/apiConfig";
 import { useNavigate } from "react-router-dom";
+import Header from "../../components/layout/Header";
+import Footer from "../../components/layout/Footer";
 
 type AdminLoginProps = {
   onAdminLogin?: () => void;
@@ -38,53 +40,57 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onAdminLogin }) => {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4">
-      <div className="auth-container max-w-md w-full p-6 bg-white/5 rounded">
-        <h1 className="text-lg font-semibold text-white mb-4">Login de Administrador</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="adminEmail" className="text-sm text-white/80 block mb-1">
-              E-mail:
-            </label>
-            <input
-              id="adminEmail"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@inbec.edu.br"
-              required
-              className="w-full p-2 rounded bg-white/6 text-white"
-              autoComplete="email"
-              autoFocus
-            />
-          </div>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-1 flex items-center justify-center p-4">
+        <div className="auth-container max-w-md w-full p-6 bg-white/5 rounded">
+          <h1 className="text-lg font-semibold text-white mb-4">Login de Administrador</h1>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="adminEmail" className="text-sm text-white/80 block mb-1">
+                E-mail:
+              </label>
+              <input
+                id="adminEmail"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@inbec.edu.br"
+                required
+                className="w-full p-2 rounded bg-white/6 text-white border-white/80 border-solid"
+                autoComplete="email"
+                autoFocus
+              />
+            </div>
 
-          <div>
-            <label htmlFor="adminPassword" className="text-sm text-white/80 block mb-1">
-              Senha:
-            </label>
-            <input
-              id="adminPassword"
-              type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              placeholder="Senha"
-              required
-              className="w-full p-2 rounded bg-white/6 text-white"
-              autoComplete="current-password"
-            />
-          </div>
+            <div>
+              <label htmlFor="adminPassword" className="text-sm text-white/80 block mb-1">
+                Senha:
+              </label>
+              <input
+                id="adminPassword"
+                type="password"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                placeholder="Senha"
+                required
+                className="w-full p-2 rounded bg-white/6 text-white border-white/80 border-solid"
+                autoComplete="current-password"
+              />
+            </div>
 
-          <div className="flex justify-end">
-            <button type="submit" disabled={loading} aria-busy={loading} className="px-4 py-2 rounded bg-inbec-blue-light text-white">
-              {loading ? "Entrando..." : "Entrar como Administrador"}
-            </button>
-          </div>
+            <div className="flex justify-end">
+              <button type="submit" disabled={loading} aria-busy={loading} className="home-button-card">
+                {loading ? "Entrando..." : "Entrar como Administrador"}
+              </button>
+            </div>
 
-          {error && <p className="mt-3 text-sm text-red-400" role="alert">{error}</p>}
-        </form>
-      </div>
-    </main>
+            {error && <p className="mt-3 text-sm text-red-400" role="alert">{error}</p>}
+          </form>
+        </div>
+      </main>
+      <Footer />
+    </div>
   );
 };
 

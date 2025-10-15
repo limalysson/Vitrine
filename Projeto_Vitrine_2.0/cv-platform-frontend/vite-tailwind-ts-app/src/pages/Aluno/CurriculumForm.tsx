@@ -195,6 +195,59 @@ const CurriculumForm: React.FC = () => {
     }
   };
 
+  // novo handler para salvar a foto imediatamente (usado no botão "Salvar Foto")
+  const handleSavePhotoNow = async () => {
+    if (!selectedFile) {
+      setError("Nenhuma foto selecionada.");
+      return;
+    }
+    setIsLoading(true);
+    setMessage("");
+    setError("");
+    try {
+      const token = localStorage.getItem("token");
+      const result = await uploadPhoto(token ?? undefined);
+      if (!result.success) {
+        setError(result.message);
+      } else {
+        setMessage(result.message);
+        // limpa selectedFile/preview já feita em uploadPhoto
+        setSelectedFile(null);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError("Erro ao salvar a foto.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // --- nova função: excluir foto atual ---
+  const deletePhoto = async () => {
+    if (!currentPhotoUrl) return;
+    if (!window.confirm("Deseja remover a foto de perfil?")) return;
+    setIsLoading(true);
+    setMessage("");
+    setError("");
+    try {
+      const token = localStorage.getItem("token");
+      // endpoint de remoção no backend: DELETE /api/alunos/foto (ajuste se diferente)
+      await api.delete(`${API_BASE}/api/alunos/foto`, {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
+      // remover localmente
+      setCurrentPhotoUrl("");
+      setSelectedFile(null);
+      setPreviewUrl("");
+      setMessage("Foto removida com sucesso.");
+    } catch (err: any) {
+      console.error("Erro ao remover foto:", err?.response || err);
+      setError(err?.response?.data?.message || "Erro ao remover foto.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const uploadPdf = async (token?: string) => {
     if (!pdfFile) return { success: true, message: "Nenhum arquivo PDF selecionado para upload." };
     const fd = new FormData();
@@ -362,21 +415,54 @@ const CurriculumForm: React.FC = () => {
             {/* Foto */}
             <section className="bg-white/5 p-4 rounded">
               <h3 className="font-semibold text-white">Foto de Perfil</h3>
-              <div className="form-field mt-2">
-                <label htmlFor="fotoPerfil" className="form-label">Selecionar foto:</label>
-                <input id="fotoPerfil" type="file" accept="image/*" onChange={handleFileChange} className="form-input" />
-                {previewUrl ? (
-                  <div className="mt-2">
-                    <img src={previewUrl} alt="Pré-visualização" className="w-32 h-32 object-cover rounded" />
-                    <p className="text-sm text-white/80">Pré-visualização da nova foto</p>
-                  </div>
-                ) : currentPhotoUrl ? (
-                  <div className="mt-2">
-                    <img src={getResourceUrl(currentPhotoUrl)} alt="Foto Atual" className="w-32 h-32 object-cover rounded" />
-                    <p className="text-sm text-white/80">Foto de perfil atual</p>
+              <div className="mt-2">
+                {/* quando houver foto atual e não houver preview, mostrar apenas a foto centralizada com botão de excluir */}
+                {currentPhotoUrl && !previewUrl ? (
+                  <div className="flex flex-col items-center">
+                    <img src={getResourceUrl(currentPhotoUrl)} alt="Foto Atual" className="w-32 h-32 object-cover rounded mb-3" />
+                    <div className="flex gap-2">
+                      <button type="button" onClick={deletePhoto} disabled={isLoading} className="home-button-card home-button-logout">
+                        Excluir Foto
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-white/70">Nenhuma foto selecionada.</p>
+                  // caso contrário, exibe input de arquivo e preview (comportamento atual)
+                  <div className="form-field">
+                    <label htmlFor="fotoPerfil" className="form-label">Selecionar foto:</label>
+                    <input id="fotoPerfil" type="file" accept="image/*" onChange={handleFileChange} className="form-input" />
+                    {previewUrl ? (
+                      <div className="mt-2">
+                        <img src={previewUrl} alt="Pré-visualização" className="w-32 h-32 object-cover rounded" />
+                        <p className="text-sm text-white/80">Pré-visualização da nova foto</p>
+                        <div className="mt-2 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => { setSelectedFile(null); setPreviewUrl(""); }}
+                            className="home-button-card"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleSavePhotoNow}
+                            disabled={isLoading}
+                            className="home-button-card"
+                          >
+                            Salvar Foto
+                          </button>
+                          
+                        </div>
+                      </div>
+                    ) : currentPhotoUrl ? (
+                      <div className="mt-2">
+                        <img src={getResourceUrl(currentPhotoUrl)} alt="Foto Atual" className="w-32 h-32 object-cover rounded" />
+                        <p className="text-sm text-white/80">Foto de perfil atual (será substituída ao salvar)</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-white/70">Nenhuma foto selecionada.</p>
+                    )}
+                  </div>
                 )}
               </div>
             </section>
