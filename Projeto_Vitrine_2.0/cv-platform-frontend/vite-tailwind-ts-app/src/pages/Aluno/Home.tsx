@@ -16,7 +16,7 @@ const AlunoHome: React.FC = () => {
     <main className="flex flex-col items-center px-4 py-8 bg-transparent">
       <header className="w-full max-w-4xl flex items-center mb-6 bg-[rgba(26,35,126,0.18)] backdrop-blur-md border border-white/20 rounded-xl p-4">
         <div className="flex-1 flex justify-center">
-          <h1 className="text-2xl font-semibold text-white">Painel de Vagas</h1>
+          <h1 className="text-2xl font-semibold text-white">Painel do Aluno</h1>
         </div>
         <button
           type="button"
