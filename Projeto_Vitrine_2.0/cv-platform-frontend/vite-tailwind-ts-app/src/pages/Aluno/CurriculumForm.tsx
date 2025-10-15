@@ -212,31 +212,64 @@ const CurriculumForm: React.FC = () => {
     }
   };
 
-  const handleSectionSave = async (sectionFields: (keyof FormShape)[]) => {
+  // replace existing handleSectionSave / patch calls with this POST-based, date-normalizing version
+  async function handleSectionSave(keys: (keyof FormShape)[]) {
+    setIsLoading(true);
     setMessage("");
     setError("");
-    setIsLoading(true);
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setError("Você precisa estar logado para salvar seu currículo.");
-      setIsLoading(false);
-      return;
-    }
+
+    const formatDateToISO = (value?: string) => {
+      if (!value) return value;
+      if (/^\d{4}-\d{2}(-\d{2})?$/.test(value)) return value;
+      const d = new Date(value);
+      if (isNaN(d.getTime())) return value;
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    };
+
     try {
-      const sectionData: Partial<FormShape> = {};
-      sectionFields.forEach((f) => {
-        sectionData[f] = (formData as any)[f];
+      const payload: any = {};
+      keys.forEach((k) => {
+        payload[k] = (formData as any)[k];
       });
-      await api.patch(`${API_BASE}/api/alunos/curriculo`, sectionData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setMessage("Seção salva com sucesso!");
+
+      if (payload.experiencias) {
+        payload.experiencias = payload.experiencias.map((exp: any) => ({
+          ...exp,
+          inicio: formatDateToISO(exp.inicio),
+          fim: formatDateToISO(exp.fim),
+        }));
+      }
+
+      if (payload.previsaoConclusao) {
+        const v = formatDateToISO(payload.previsaoConclusao);
+        payload.previsaoConclusao = v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v.slice(0, 7) : v;
+      }
+
+      // rota correta do backend
+      const url = `${API_BASE}/api/alunos/curriculo`;
+      console.log("POST ->", url, payload);
+
+      const res = await api.post(url, payload); // api deve prover header Authorization via interceptor ou configuração
+      setMessage(res?.data?.message || "Salvo com sucesso");
+
+      if (res?.data?.curriculum) {
+        // opcional: sincronizar formData com retorno do backend
+        // setFormData(res.data.curriculum);
+      }
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Erro ao salvar a seção.");
+      console.error(err);
+      if (err?.response?.status === 404) {
+        setError("Endpoint não encontrado (404). Verifique rota backend: /api/alunos/curriculo");
+      } else {
+        setError(err?.response?.data?.message || "Erro ao salvar");
+      }
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

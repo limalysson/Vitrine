@@ -4,8 +4,8 @@ const ExperienceSchema = new mongoose.Schema({
     empresa: { type: String, required: true },
     cargo: { type: String, required: true },
     inicio: { type: String, required: true },
-    fim: { type: String, required: true },
-    descricao: { type: String, required: true }
+    fim: { type: String, required: false },      // agora opcional
+    descricao: { type: String, required: false }
 });
 
 const LanguageSchema = new mongoose.Schema({
