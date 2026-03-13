@@ -93,7 +93,22 @@ const AdminVagasDashboard: React.FC = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setMessage("Currículo selecionado para a vaga com sucesso!");
+      
+      // Update local state to reflect the selection instantaneously
+      setVagas((prev) => 
+        prev.map((v) => {
+          if (v._id === vagaId) {
+            const isSelected = v.selecionados?.includes(curriculoId);
+            const newSelecionados = isSelected 
+              ? v.selecionados.filter((id: string) => id !== curriculoId)
+              : [...(v.selecionados || []), curriculoId];
+            return { ...v, selecionados: newSelecionados };
+          }
+          return v;
+        })
+      );
+      
+      setMessage("Currículo selecionado/desmarcado para a vaga com sucesso!");
     } catch (err) {
       setError("Erro ao selecionar currículo.");
     }
@@ -116,12 +131,14 @@ const AdminVagasDashboard: React.FC = () => {
   }
 
   return (
-    <main className="w-full max-w-7xl mx-auto px-4 py-8 animate-fade-in-up">
-      {/* Notificações Topo */}
-      <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md pointer-events-none">
-         {message && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-6 py-3 rounded-lg shadow-lg text-center backdrop-blur-md mb-2">{message}</div>}
-         {error && <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 px-6 py-3 rounded-lg shadow-lg text-center backdrop-blur-md mb-2">{error}</div>}
+    <>
+      {/* Notificações Topo Direita */}
+      <div className="fixed top-6 right-6 z-[100] w-full max-w-sm pointer-events-none flex flex-col gap-2">
+         {message && <div className="animate-fade-in-up bg-emerald-500/90 border border-emerald-400 text-white px-6 py-4 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] shadow-emerald-500/20 text-sm font-medium backdrop-blur-md">{message}</div>}
+         {error && <div className="animate-fade-in-up bg-rose-500/90 border border-rose-400 text-white px-6 py-4 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] shadow-rose-500/20 text-sm font-medium backdrop-blur-md">{error}</div>}
       </div>
+
+      <main className="w-full max-w-7xl mx-auto px-4 py-8 animate-fade-in-up">
 
       <div className="w-full">
         <header className="card-default-large mb-8 border-indigo-500/20">
@@ -136,7 +153,7 @@ const AdminVagasDashboard: React.FC = () => {
             </h1>
             
             <div className="flex gap-3">
-              <button className="home-button-card !py-2 !px-4 text-sm bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600/40" onClick={() => navigate("/admin/cadastrar-vaga")}>
+              <button className="home-button-card !py-2 !px-4 text-sm bg-indigo-600/20  border border-indigo-500/30 hover:bg-indigo-600/40" onClick={() => navigate("/admin/cadastrar-vaga")}>
                 + Nova Vaga
               </button>
               <button className="home-button-card !py-2 !px-4 text-sm bg-white/5 border border-white/10 hover:bg-white/10" onClick={() => navigate("/admin/dashboard")}>
@@ -220,10 +237,10 @@ const AdminVagasDashboard: React.FC = () => {
                          
                          {vaga.candidatos && vaga.candidatos.length > 0 && (
                             <button 
-                              className="text-sm text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                              className="home-button-card !py-1.5 !px-4 text-xs !from-indigo-600 !to-indigo-500 shadow-indigo-500/20 whitespace-nowrap flex items-center gap-2"
                               onClick={() => copyCandidatesLink(vaga.candidatos)}
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
                               </svg>
                               Copiar Link Público
@@ -244,10 +261,14 @@ const AdminVagasDashboard: React.FC = () => {
                                 <p className="text-xs text-slate-400 truncate">{curriculo.curso}</p>
                               </div>
                               <button 
-                                className="px-3 py-1.5 text-xs rounded-md font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors w-full sm:w-auto"
+                                className={`px-5 py-2 text-xs rounded-lg font-bold uppercase tracking-wider transition-all w-full sm:w-auto shadow-sm ${
+                                  vaga.selecionados?.includes(curriculo._id)
+                                    ? 'bg-emerald-400 text-slate-950 shadow-inner' // Estado selecionado
+                                    : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20' // Estado não selecionado
+                                }`}
                                 onClick={() => handleSelecionarCandidato(vaga._id, curriculo._id)}
                               >
-                                Selecionar
+                                {vaga.selecionados?.includes(curriculo._id) ? 'Selecionado' : 'Selecionar'}
                               </button>
                             </div>
                           ))}
@@ -261,6 +282,7 @@ const AdminVagasDashboard: React.FC = () => {
         </section>
       </div>
     </main>
+    </>
   );
 };
 

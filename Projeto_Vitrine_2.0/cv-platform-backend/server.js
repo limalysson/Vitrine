@@ -11,9 +11,13 @@ const path = require('path');
 const fs = require('fs'); // Importa o módulo fs para criar diretórios
 const os = require('os'); // <-- Adicionar esta linha para acessar informações do sistema
 const Job = require('./src/models/Job');
+const dns = require('dns');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Força o Node.js a usar um DNS público (Cloudflare/Google) para evitar erro querySrv ECONNREFUSED do MongoDB Atlas
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 // Conecta ao Banco de Dados
 connectDB();
@@ -252,29 +256,38 @@ app.post('/api/alunos/curriculo', auth, async (req, res) => {
     }
 });
 
-// Rota para Listar Currículos SELECIONADOS (Empresa)
+// Rota para Listar Currículos SELECIONADOS ou por IDs (Empresa)
 app.get('/api/curriculos/ativos', async (req, res) => {
-    try {
-        console.log('Backend: Requisição /api/curriculos/ativos (selecionados) recebida!');
+    try {
+        const { ids } = req.query;
+        console.log(`Backend: Requisição /api/curriculos/ativos recebida! Filtro IDs explícitos: ${ids ? 'Sim' : 'Não'}`);
         
-        // ALTERAÇÃO PRINCIPAL AQUI
-        // Agora, buscamos currículos que o admin marcou como selecionados.
-        const selectedCurriculums = await Curriculum.find({ 
-            selecionadoParaEmpresa: true 
-        }).select('-__v -createdAt -updatedAt');
+        let query = { selecionadoParaEmpresa: true };
 
-        if (selectedCurriculums.length === 0) { // Variável atualizada
-            console.log('Backend: Nenhum currículo selecionado foi encontrado.');
-            return res.status(404).json({ message: 'Nenhum currículo selecionado foi encontrado no momento.' });
-        }
+        if (ids) {
+            const idsArray = ids.split(',').map(id => id.trim());
+            // Se o link contiver IDs explícitos (compartilhamento da vaga), permite listar mesmo se não "destacado" na home
+            // desde que o currículo seja válido (ativo ou pendente)
+            query = { 
+                _id: { $in: idsArray },
+                status: { $in: ['ativo', 'pendente'] }
+            };
+        }
+        
+        const selectedCurriculums = await Curriculum.find(query).select('-__v -createdAt -updatedAt');
 
-        console.log(`Backend: ${selectedCurriculums.length} currículos selecionados encontrados.`); // Variável atualizada
-        res.status(200).json(selectedCurriculums); // Variável atualizada
+        if (selectedCurriculums.length === 0) {
+            console.log('Backend: Nenhum currículo encontrado com os parâmetros fornecidos.');
+            return res.status(404).json({ message: 'Nenhum currículo selecionado ou correspondente foi encontrado no momento.' });
+        }
 
-    } catch (error) {
-        console.error('Backend: Erro ao buscar currículos selecionados:', error);
-        res.status(500).json({ message: 'Erro interno do servidor ao buscar currículos.' });
-    }
+        console.log(`Backend: ${selectedCurriculums.length} currículos selecionados/requisitados encontrados.`);
+        res.status(200).json(selectedCurriculums);
+
+    } catch (error) {
+        console.error('Backend: Erro ao buscar currículos selecionados/requisitados:', error);
+        res.status(500).json({ message: 'Erro interno do servidor ao buscar currículos.' });
+    }
 });
 
 // Rota para Buscar Currículo Detalhado por ID (Empresa)

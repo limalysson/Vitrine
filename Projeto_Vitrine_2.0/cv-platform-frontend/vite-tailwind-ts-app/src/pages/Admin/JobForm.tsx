@@ -95,12 +95,14 @@ const JobForm: React.FC<JobFormProps> = ({ onSuccess, modoEdicao = false }) => {
   };
 
   return (
-    <main className="w-full max-w-4xl mx-auto px-4 py-8 animate-fade-in-up">
+    <>
       {/* Toast Notifications */}
-      <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md pointer-events-none flex flex-col gap-2">
-         {message && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-6 py-3 rounded-lg shadow-lg text-center backdrop-blur-md animate-fade-in-up">{message}</div>}
-         {error && <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 px-6 py-3 rounded-lg shadow-lg text-center backdrop-blur-md animate-fade-in-up">{error}</div>}
+      <div className="fixed top-6 right-6 z-[100] w-full max-w-sm pointer-events-none flex flex-col gap-2">
+         {message && <div className="animate-fade-in-up bg-emerald-500/90 border border-emerald-400 text-white px-6 py-4 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] shadow-emerald-500/20 text-sm font-medium backdrop-blur-md">{message}</div>}
+         {error && <div className="animate-fade-in-up bg-rose-500/90 border border-rose-400 text-white px-6 py-4 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] shadow-rose-500/20 text-sm font-medium backdrop-blur-md">{error}</div>}
       </div>
+
+      <main className="w-full max-w-4xl mx-auto px-4 py-8 animate-fade-in-up">
 
       <header className="card-default-large mb-8 border-indigo-500/20">
          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-100 pointer-events-none" />
@@ -246,6 +248,7 @@ const JobForm: React.FC<JobFormProps> = ({ onSuccess, modoEdicao = false }) => {
 
       </form>
     </main>
+    </>
   );
 };
 
