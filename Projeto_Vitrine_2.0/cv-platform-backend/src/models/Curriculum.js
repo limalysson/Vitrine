@@ -22,7 +22,7 @@ const ProjectSchema = new mongoose.Schema({
 const CurriculumSchema = new mongoose.Schema({
     alunoEmail: { type: String, required: true, unique: true, lowercase: true, trim: true },
     nomeCompleto: { type: String, required: true, trim: true },
-    dataNascimento: { type: Date, required: true },
+    dataNascimento: { type: Date, required: false },
     telefone: { type: String, trim: true },
     linkedin: { type: String, trim: true },
     github: { type: String, trim: true },
@@ -33,9 +33,9 @@ const CurriculumSchema = new mongoose.Schema({
      // --- NOVO CAMPO PARA O PDF ---
     pdfUrl: { type: String, trim: true, default: '' }, // URL do PDF do currículo
 
-    curso: { type: String, required: true, trim: true },
-    periodoAtual: { type: String, required: true, trim: true },
-    previsaoConclusao: { type: String, required: true, trim: true },
+    curso: { type: String, required: false, trim: true },
+    periodoAtual: { type: String, required: false, trim: true },
+    previsaoConclusao: { type: String, required: false, trim: true },
 
     experiencias: [ExperienceSchema],
     habilidadesTecnicas: { type: String, trim: true },

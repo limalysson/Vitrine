@@ -226,9 +226,17 @@ const CurriculumForm: React.FC = () => {
       keys.forEach((k) => { payload[k] = (formData as any)[k]; });
 
       if (payload.experiencias) {
-        payload.experiencias = payload.experiencias.map((exp: any) => ({
-          ...exp, inicio: formatDateToISO(exp.inicio), fim: formatDateToISO(exp.fim),
-        }));
+        payload.experiencias = payload.experiencias
+          .filter((exp: any) => exp.empresa?.trim() || exp.cargo?.trim() || exp.inicio?.trim())
+          .map((exp: any) => ({
+            ...exp, inicio: formatDateToISO(exp.inicio), fim: formatDateToISO(exp.fim),
+          }));
+      }
+      if (payload.idiomas) {
+        payload.idiomas = payload.idiomas.filter((i: any) => i.idioma?.trim() || i.nivel?.trim());
+      }
+      if (payload.projetos) {
+        payload.projetos = payload.projetos.filter((p: any) => p.nome?.trim() || p.link?.trim());
       }
 
       if (payload.previsaoConclusao) {
@@ -263,10 +271,15 @@ const CurriculumForm: React.FC = () => {
       const pdfResult = await uploadPdf(token);
       if (!pdfResult.success) { setError(pdfResult.message); setIsLoading(false); return; }
 
-      if (formData.id) {
-        await api.put(`${API_BASE}/api/alunos/curriculo/${formData.id}`, formData, { headers: { Authorization: `Bearer ${token}` } });
+      const cleanData = { ...formData };
+      cleanData.experiencias = cleanData.experiencias.filter((e) => e.empresa?.trim() || e.cargo?.trim() || e.inicio?.trim());
+      cleanData.idiomas = cleanData.idiomas.filter((i) => i.idioma?.trim() || i.nivel?.trim());
+      cleanData.projetos = cleanData.projetos.filter((p) => p.nome?.trim() || p.link?.trim());
+
+      if (cleanData.id) {
+        await api.put(`${API_BASE}/api/alunos/curriculo/${cleanData.id}`, cleanData, { headers: { Authorization: `Bearer ${token}` } });
       } else {
-        const { pdfUrl: _pdf, ...curriculumData } = formData;
+        const { pdfUrl: _pdf, ...curriculumData } = cleanData;
         await api.post(`${API_BASE}/api/alunos/curriculo`, curriculumData, { headers: { Authorization: `Bearer ${token}` } });
       }
       setMessage("Currículo atualizado completamente com sucesso!");
