@@ -125,7 +125,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 2 * 1024 * 1024 }, // Limite de 2MB para a foto
+    limits: { fileSize: 5 * 1024 * 1024 }, // Aumentado para 5MB para coincidir com a UI
     fileFilter: (req, file, cb) => {
         const filetypes = /jpeg|jpg|png|gif/;
         const mimetype = filetypes.test(file.mimetype);
@@ -261,19 +261,19 @@ app.get('/api/curriculos/ativos', async (req, res) => {
     try {
         const { ids } = req.query;
         console.log(`Backend: Requisição /api/curriculos/ativos recebida! Filtro IDs explícitos: ${ids ? 'Sim' : 'Não'}`);
-        
+
         let query = { selecionadoParaEmpresa: true };
 
         if (ids) {
             const idsArray = ids.split(',').map(id => id.trim());
             // Se o link contiver IDs explícitos (compartilhamento da vaga), permite listar mesmo se não "destacado" na home
             // desde que o currículo seja válido (ativo ou pendente)
-            query = { 
+            query = {
                 _id: { $in: idsArray },
                 status: { $in: ['ativo', 'pendente'] }
             };
         }
-        
+
         const selectedCurriculums = await Curriculum.find(query).select('-__v -createdAt -updatedAt');
 
         if (selectedCurriculums.length === 0) {
@@ -303,8 +303,8 @@ app.get('/api/curriculos/:id', async (req, res) => {
         }
 
         if (curriculum.status !== 'ativo' && curriculum.status !== 'pendente') {
-             console.log(`Backend: Acesso negado para currículo ${curriculumId} com status ${curriculum.status}.`);
-             return res.status(403).json({ message: 'Acesso negado. Currículo não disponível para visualização.' });
+            console.log(`Backend: Acesso negado para currículo ${curriculumId} com status ${curriculum.status}.`);
+            return res.status(403).json({ message: 'Acesso negado. Currículo não disponível para visualização.' });
         }
 
         console.log(`Backend: Currículo ${curriculumId} encontrado e acessível.`);
@@ -398,30 +398,37 @@ app.put('/api/admin/curriculos/:id/select', auth, authorizeAdmin, async (req, re
 });
 
 
-// --- NOVA ROTA PARA UPLOAD DE FOTO DE PERFIL ---
+// --- ROTA PARA UPLOAD DE FOTO DE PERFIL ---
 app.post('/api/alunos/upload-foto', auth, upload.single('fotoPerfil'), async (req, res) => {
     try {
-        console.log('Backend: Requisição /api/alunos/upload-foto recebida!');
         if (!req.file) {
-            console.log('Backend: Nenhum arquivo de foto enviado no upload.');
             return res.status(400).json({ message: 'Nenhum arquivo de foto enviado.' });
         }
 
         const alunoEmail = req.user.email;
+
+        // Verifica se o currículo existe antes de tentar o update com upsert
+        // Isso evita falha de validação (campos obrigatórios como nomeCompleto)
+        const checkCurriculo = await Curriculum.findOne({ alunoEmail });
+        if (!checkCurriculo) {
+            // Caso não exista, remove o arquivo que o multer salvou para não sujar o disco
+            const fs = require('fs');
+            const path = require('path');
+            if (req.file.path) {
+                fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({
+                message: 'Por favor, preencha e salve o bloco de "Dados Pessoais" primeiro antes de enviar uma foto.'
+            });
+        }
+
         const fotoPath = `/uploads/fotos/${req.file.filename}`;
-        console.log(`Backend: Foto recebida para ${alunoEmail}. Caminho: ${fotoPath}`);
 
         const curriculum = await Curriculum.findOneAndUpdate(
             { alunoEmail: alunoEmail },
             { fotoUrl: fotoPath },
-            { new: true, upsert: true, runValidators: true }
+            { new: true, runValidators: true }
         );
-
-        if (!curriculum) {
-            console.log('Backend: Currículo do aluno não encontrado para atualizar foto.');
-            return res.status(404).json({ message: 'Currículo do aluno não encontrado para atualizar a foto.' });
-        }
-        console.log('Backend: FotoUrl do currículo atualizada no BD.');
 
         res.status(200).json({
             message: 'Foto de perfil atualizada com sucesso!',
@@ -430,11 +437,8 @@ app.post('/api/alunos/upload-foto', auth, upload.single('fotoPerfil'), async (re
         });
 
     } catch (error) {
-        console.error('Backend: Erro no upload da foto ou ao atualizar currículo:', error);
-        if (error instanceof multer.MulterError) {
-            return res.status(400).json({ message: error.message });
-        }
-        res.status(500).json({ message: error.message || 'Erro interno do servidor ao fazer upload da foto.' });
+        console.error('Backend: Erro no upload da foto:', error);
+        res.status(500).json({ message: 'Erro interno ao salvar a foto no banco de dados.' });
     }
 });
 
@@ -599,31 +603,31 @@ app.put('/api/admin/vagas/:id', auth, async (req, res) => {
 
 // --- Rota para REMOVER FOTO DE PERFIL (aluno) ---
 app.delete('/api/alunos/foto', auth, async (req, res) => {
-  try {
-    const alunoEmail = req.user.email;
-    const curriculo = await Curriculum.findOne({ alunoEmail });
+    try {
+        const alunoEmail = req.user.email;
+        const curriculo = await Curriculum.findOne({ alunoEmail });
 
-    if (!curriculo || !curriculo.fotoUrl) {
-      return res.status(404).json({ success: false, message: 'Nenhuma foto cadastrada.' });
+        if (!curriculo || !curriculo.fotoUrl) {
+            return res.status(404).json({ success: false, message: 'Nenhuma foto cadastrada.' });
+        }
+
+        const fotoPath = curriculo.fotoUrl;
+        const filePath = path.join(__dirname, fotoPath);
+
+        // remove arquivo físico se existir
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        // limpa campo no documento
+        curriculo.fotoUrl = '';
+        await curriculo.save();
+
+        return res.json({ success: true, message: 'Foto removida com sucesso.' });
+    } catch (err) {
+        console.error('Erro ao remover foto:', err);
+        return res.status(500).json({ success: false, message: err.message || 'Erro interno ao remover foto.' });
     }
-
-    const fotoPath = curriculo.fotoUrl;
-    const filePath = path.join(__dirname, fotoPath);
-
-    // remove arquivo físico se existir
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-
-    // limpa campo no documento
-    curriculo.fotoUrl = '';
-    await curriculo.save();
-
-    return res.json({ success: true, message: 'Foto removida com sucesso.' });
-  } catch (err) {
-    console.error('Erro ao remover foto:', err);
-    return res.status(500).json({ success: false, message: err.message || 'Erro interno ao remover foto.' });
-  }
 });
 
 // --- Iniciando o Servidor ---
@@ -643,6 +647,26 @@ const getLocalIpAddress = () => {
 };
 
 const localIp = getLocalIpAddress();
+
+// --- TRATAMENTO DE ERROS GLOBAL (JSON) ---
+app.use((err, req, res, next) => {
+    console.error('Erro detectado pelo handler global:', err);
+
+    // Erros do Multer (ex: arquivo muito grande)
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+                message: 'A foto escolhida é muito grande. O limite máximo permitido é 5MB.'
+            });
+        }
+        return res.status(400).json({ message: `Erro no upload: ${err.message}` });
+    }
+
+    // Outros erros
+    res.status(err.status || 500).json({
+        message: err.message || 'Ocorreu um erro interno no servidor.'
+    });
+});
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor rodando em http://${localIp}:${PORT}`);

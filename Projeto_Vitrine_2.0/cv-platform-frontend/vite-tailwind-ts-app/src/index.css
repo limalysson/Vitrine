@@ -39,6 +39,35 @@ body {
   min-height: 100vh;
 }
 
+/* --- Custom Scrollbar Premium --- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--brand-primary-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  border: 3px solid var(--brand-primary-base);
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-accent-end);
+  box-shadow: 0 0 10px var(--brand-accent-end);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) var(--brand-primary-base);
+}
+
+
 @layer components {
   /* Botão Primário Estilo "Wow" */
   .home-button-card {

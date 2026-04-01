@@ -8,6 +8,7 @@ const JobSchema = new Schema({
     requisitos: { type: String, required: true },
     beneficios: { type: String },
     tipo: { type: String, required: true }, // Estágio, CLT, PJ, etc
+    modalidade: { type: String, enum: ['Presencial', 'Híbrido', 'Remoto'], required: true }, // NOVO CAMPO
     localizacao: { type: String, required: true },
     curso: { type: String, required: true }, // Curso relacionado
     salario: { type: String },

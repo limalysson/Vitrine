@@ -19,6 +19,7 @@ type Curriculum = {
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [curriculums, setCurriculums] = useState<Curriculum[]>([]);
+  const [rawCurriculums, setRawCurriculums] = useState<Curriculum[]>([]); // New state for global counts
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | React.ReactNode>("");
   const [message, setMessage] = useState<string>("");
@@ -40,11 +41,14 @@ const AdminDashboard: React.FC = () => {
     }
 
     try {
-      const response = await api.get(`${API_BASE_URL}/api/admin/curriculos`, {
+        const response = await api.get(`${API_BASE_URL}/api/admin/curriculos`, {
         headers: { Authorization: `Bearer ${adminToken}` },
       });
 
-      const filteredData: Curriculum[] = (response.data as Curriculum[]).filter((cur) => {
+      const allData: Curriculum[] = response.data || [];
+      setRawCurriculums(allData);
+
+      const filteredData: Curriculum[] = allData.filter((cur) => {
         const statusOk = filterStatus === "all" || cur.status === filterStatus;
         const periodoOk = filterPeriodo === "all" || String(cur.periodoAtual) === filterPeriodo;
         const cursoOk = filterCurso === "all" || cur.curso === filterCurso;
@@ -220,12 +224,46 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Ações Rápidas Topo */}
-          <div className="col-span-1 md:col-span-4 flex flex-col gap-3 justify-center">
-            <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 flex flex-col justify-center items-center h-full text-center">
-              <p className="text-3xl font-black text-indigo-400 mb-1">{curriculums.length}</p>
-              <p className="text-xs text-slate-400 uppercase tracking-widest">Currículos Filtrados</p>
+          {/* Ações Rápidas Topo: 4 Retângulos */}
+          <div className="col-span-1 md:col-span-4 grid grid-cols-4 gap-2">
+            {/* Filtrados - Total atual com filtros */}
+            <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-2 flex flex-col justify-center items-center text-center">
+              <p className="text-xl font-black text-indigo-400">{curriculums.length}</p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Filtrados</p>
             </div>
+
+            {/* Ativos - Clickable */}
+            <button 
+              onClick={() => setFilterStatus("ativo")}
+              className={`flex flex-col justify-center items-center text-center p-2 rounded-xl border transition-all hover:scale-105 active:scale-95 ${filterStatus === "ativo" ? "bg-emerald-500/30 border-emerald-500/60 shadow-[0_0_15px_rgba(16,185,129,0.2)]" : "bg-slate-900/40 border-white/5 hover:border-emerald-500/30"}`}
+            >
+              <p className={`text-xl font-black ${filterStatus === "ativo" ? "text-emerald-300" : "text-emerald-500/80"}`}>
+                {rawCurriculums.filter(cv => cv.status === "ativo").length}
+              </p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Ativos</p>
+            </button>
+
+            {/* Pendentes - Clickable */}
+            <button 
+              onClick={() => setFilterStatus("pendente")}
+              className={`flex flex-col justify-center items-center text-center p-2 rounded-xl border transition-all hover:scale-105 active:scale-95 ${filterStatus === "pendente" ? "bg-amber-500/30 border-amber-500/60 shadow-[0_0_15px_rgba(245,158,11,0.2)]" : "bg-slate-900/40 border-white/5 hover:border-amber-500/30"}`}
+            >
+              <p className={`text-xl font-black ${filterStatus === "pendente" ? "text-amber-300" : "text-amber-500/80"}`}>
+                {rawCurriculums.filter(cv => cv.status === "pendente").length}
+              </p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Pendentes</p>
+            </button>
+
+            {/* Inativos - Clickable */}
+            <button 
+              onClick={() => setFilterStatus("inativo")}
+              className={`flex flex-col justify-center items-center text-center p-2 rounded-xl border transition-all hover:scale-105 active:scale-95 ${filterStatus === "inativo" ? "bg-rose-500/30 border-rose-500/60 shadow-[0_0_15px_rgba(239,68,68,0.2)]" : "bg-slate-900/40 border-white/5 hover:border-rose-500/30"}`}
+            >
+              <p className={`text-xl font-black ${filterStatus === "inativo" ? "text-rose-300" : "text-rose-500/80"}`}>
+                {rawCurriculums.filter(cv => cv.status === "inativo").length}
+              </p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Inativos</p>
+            </button>
           </div>
         </div>
 

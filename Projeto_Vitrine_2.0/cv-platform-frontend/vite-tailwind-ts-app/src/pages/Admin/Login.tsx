@@ -74,7 +74,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onAdminLogin }) => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@inbec.edu.br"
+                  placeholder="admin@instituição"
                   required
                   className="form-input !pl-10 focus:border-indigo-500 focus:ring-indigo-500/20"
                   autoComplete="email"
